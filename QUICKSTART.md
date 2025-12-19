@@ -75,6 +75,16 @@ python -m robot --outputdir reports/robotframework tests/robotframework/
 3. 修改示例测试以适应你的需求
 4. 编写自己的测试用例
 
+## CI / CD
+
+项目已提供 GitHub Actions 工作流和 Jenkinsfile 示例：
+
+- GitHub Actions workflow: `.github/workflows/ci.yml`
+- Jenkins pipeline: `Jenkinsfile`
+- CI helper scripts: `scripts/ci_run.sh`, `scripts/collect_reports.py`
+
+关于如何配置 Secrets / Credentials，请参阅 `docs/CI.md`。
+
 ## 常见命令
 
 ```bash

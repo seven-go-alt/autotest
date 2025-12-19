@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install
+
+      - name: Run pytest (Selenium / Playwright)
+        run: |
+          python -m pytest tests/ -v --html=reports/pytest_report.html --self-contained-html || true
+
+      - name: Run Robot Framework suites
+        run: |
+          python -m robot --outputdir reports/robotframework tests/robotframework/ || true
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            reports/
+            reports/pytest_report.html
+            reports/robotframework/
+
+      - name: Post summary (console)
+        run: |
+          echo "Reports saved to reports/"
+
+      - name: Notify Slack (optional)
+        if: ${{ secrets.SLACK_WEBHOOK != '' }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          echo "Sending slack notification..."
+          PAYLOAD=$(jq -n --arg text "CI build $GITHUB_RUN_ID finished. Reports attached." '{text: $text}')
+          curl -s -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK" || true
+
+      - name: Notify Email via SMTP (optional)
+        if: ${{ secrets.SMTP_RECIPIENT != '' && secrets.SMTP_HOST != '' }}
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT || '587' }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_RECIPIENT: ${{ secrets.SMTP_RECIPIENT }}
+        run: |
+          python3 << 'PYEOF'
+          import smtplib
+          from email.mime.text import MIMEText
+          from email.mime.multipart import MIMEMultipart
+          import os
+          
+          smtp_host = os.getenv('SMTP_HOST')
+          smtp_port = int(os.getenv('SMTP_PORT', '587'))
+          smtp_user = os.getenv('SMTP_USER')
+          smtp_password = os.getenv('SMTP_PASSWORD')
+          recipient = os.getenv('SMTP_RECIPIENT')
+          
+          if not all([smtp_host, smtp_user, smtp_password, recipient]):
+            print("SMTP credentials not fully configured, skipping email.")
+            exit(0)
+          
+          try:
+            msg = MIMEMultipart()
+            msg['From'] = smtp_user
+            msg['To'] = recipient
+            msg['Subject'] = f"CI Build ${{ github.run_id }} - Test Report"
+            
+            body = f"""
+            CI build {os.getenv('GITHUB_RUN_ID')} completed.
+            
+            Workflow: {os.getenv('GITHUB_WORKFLOW')}
+            Repository: {os.getenv('GITHUB_REPOSITORY')}
+            Commit: {os.getenv('GITHUB_SHA')}
+            
+            Test reports are available in the job artifacts.
+            """
+            
+            msg.attach(MIMEText(body, 'plain'))
+            
+            server = smtplib.SMTP(smtp_host, smtp_port)
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+            server.quit()
+            
+            print(f"Email sent to {recipient}")
+          except Exception as e:
+            print(f"Failed to send email: {e}")
+          PYEOF

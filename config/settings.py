@@ -12,7 +12,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).parent.parent
 
 # 测试配置
-BASE_URL = os.getenv("BASE_URL", "https://www.baidu.com")
+BASE_URL = os.getenv("BASE_URL", "https://www.python.org")
 BROWSER = os.getenv("BROWSER", "chrome").lower()
 HEADLESS = os.getenv("HEADLESS", "false").lower() == "true"
 TIMEOUT = int(os.getenv("TIMEOUT", "30"))

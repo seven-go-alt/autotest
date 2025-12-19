@@ -41,6 +41,13 @@ class SeleniumHelper:
                 options.add_argument("--headless")
             for opt in settings.BROWSER_OPTIONS["chrome"]["options"]:
                 options.add_argument(opt)
+            # 添加防自动化检测参数
+            options.add_argument("--disable-blink-features=AutomationControlled")
+            options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            options.add_experimental_option('useAutomationExtension', False)
+            # 设置用户代理
+            options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
+            
             service = Service(ChromeDriverManager().install())
             self.driver = webdriver.Chrome(service=service, options=options)
             

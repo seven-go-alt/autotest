@@ -7,12 +7,11 @@ pytest-timeout==2.2.0
 
 # Robot Framework
 robotframework==6.1.1
-robotframework-seleniumlibrary==6.1.6
-robotframework-pythonlibcore==4.2.0
+robotframework-seleniumlibrary==6.8.0
 
 # Selenium
 selenium==4.15.2
-webdriver-manager==4.0.1
+webdriver-manager==4.0.2
 
 # Playwright
 playwright==1.40.0
@@ -21,5 +20,4 @@ robotframework-browser==18.0.0
 # 其他工具
 python-dotenv==1.0.0
 allure-pytest==2.13.2
-pytest-allure-adaptor==1.7.10
 

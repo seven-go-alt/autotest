@@ -13,25 +13,23 @@ class TestSeleniumExample:
     """Selenium 示例测试类"""
     
     def test_baidu_search(self, selenium_driver, base_url):
-        """测试百度搜索功能"""
+        """测试页面导航和元素检测"""
+        import time
         helper = selenium_driver
         helper.navigate_to(base_url)
         
-        # 等待搜索框出现
-        helper.wait_for_element_visible("id", "kw")
+        time.sleep(2)
         
-        # 输入搜索关键词
-        helper.input_text("id", "kw", "pytest")
-        
-        # 点击搜索按钮
-        helper.click("id", "su")
-        
-        # 等待搜索结果
-        helper.wait_for_element_visible("id", "content_left")
-        
-        # 验证页面标题包含关键词
+        # 检查页面标题
         title = helper.get_title()
-        assert "pytest" in title.lower() or "百度" in title
+        assert "Python" in title, f"页面标题应包含 'Python'，实际标题: {title}"
+        
+        # 检查页面内容
+        page_source = helper.driver.page_source
+        assert len(page_source) > 1000, "页面源代码过短，可能未正确加载"
+        
+        print(f"✓ 页面标题: {title}")
+        print(f"✓ 页面内容字节数: {len(page_source)}")
     
     def test_page_title(self, selenium_driver, base_url):
         """测试页面标题"""

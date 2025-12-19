@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation    百度搜索示例测试用例
 Library           SeleniumLibrary
-Library           Browser
+Library           ../../utils/robot_custom_library.py    WITH NAME    PlayLib
 Resource          ../resources/common.robot
 
 *** Variables ***
@@ -22,15 +22,17 @@ ${SEARCH_KEYWORD}    Robot Framework
     Close Browser
 
 百度搜索测试 - Playwright
-    [Documentation]    使用 Playwright 进行百度搜索测试
+    [Documentation]    使用 Playwright（通过自定义关键字）进行百度搜索测试
     [Tags]    playwright    smoke
-    New Page    ${BASE_URL}
-    Fill Text    id=kw    ${SEARCH_KEYWORD}
-    Click    id=su
-    Wait For Elements State    id=content_left    visible    timeout=10s
+    Open Playwright Browser    headless=True    browser_name=chromium
+    Go To    ${BASE_URL}
+    Wait For Selector    css=input#kw    timeout=15
+    Input Text    css=input#kw    ${SEARCH_KEYWORD}
+    Click    css=button#su
+    Wait For Selector    css=#content_left    timeout=15
     ${title}=    Get Title
     Should Contain    ${title}    百度
-    Close Browser
+    Close Playwright Browser
 
 页面标题验证
     [Documentation]    验证页面标题

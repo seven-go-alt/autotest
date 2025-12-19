@@ -87,7 +87,7 @@ def display_menu():
     print("1) pytest (Selenium)")
     print("2) pytest (Playwright)")
     print("3) pytest (全部)")
-    print("4) Robot Framework")
+    print("4) Robot Framework (推荐用于功能型/关键字封装测试)")
     print("5) 全部运行")
     print("0) 退出")
     print("==========================================\n")

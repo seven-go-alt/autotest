@@ -40,46 +40,68 @@ class SeleniumHelper:
         self.wait = None
         
     def start_browser(self):
-        """启动浏览器"""
+        """启动浏览器，优先支持 Docker/远程模式"""
         if self.browser == "chrome":
             options = ChromeOptions()
             if self.headless:
-                options.add_argument("--headless")
+                options.add_argument("--headless=new")
             for opt in settings.BROWSER_OPTIONS["chrome"]["options"]:
                 options.add_argument(opt)
-            # 添加防自动化检测参数
+            # 防自动化检测参数
             options.add_argument("--disable-blink-features=AutomationControlled")
             options.add_experimental_option("excludeSwitches", ["enable-automation"])
-            options.add_experimental_option('useAutomationExtension', False)
+            options.add_experimental_option("useAutomationExtension", False)
             # 设置用户代理
-            options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
-            
-            service = Service(ChromeDriverManager().install())
-            self.driver = webdriver.Chrome(service=service, options=options)
-            
+            options.add_argument(
+                "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            )
+
+            if settings.SELENIUM_REMOTE_URL:
+                # 远程运行（适用于 Docker + selenium/standalone-chrome）
+                self.driver = webdriver.Remote(
+                    command_executor=settings.SELENIUM_REMOTE_URL,
+                    options=options,
+                )
+            else:
+                service = Service(ChromeDriverManager().install())
+                self.driver = webdriver.Chrome(service=service, options=options)
+
         elif self.browser == "firefox":
             options = FirefoxOptions()
             if self.headless:
                 options.add_argument("--headless")
-            service = Service(GeckoDriverManager().install())
-            self.driver = webdriver.Firefox(service=service, options=options)
-            
+            if settings.SELENIUM_REMOTE_URL:
+                self.driver = webdriver.Remote(
+                    command_executor=settings.SELENIUM_REMOTE_URL,
+                    options=options,
+                )
+            else:
+                service = Service(GeckoDriverManager().install())
+                self.driver = webdriver.Firefox(service=service, options=options)
+
         elif self.browser == "edge":
             options = EdgeOptions()
             if self.headless:
                 options.add_argument("--headless")
-            service = Service(EdgeChromiumDriverManager().install())
-            self.driver = webdriver.Edge(service=service, options=options)
+            if settings.SELENIUM_REMOTE_URL:
+                self.driver = webdriver.Remote(
+                    command_executor=settings.SELENIUM_REMOTE_URL,
+                    options=options,
+                )
+            else:
+                service = Service(EdgeChromiumDriverManager().install())
+                self.driver = webdriver.Edge(service=service, options=options)
         else:
             raise ValueError(f"不支持的浏览器类型: {self.browser}")
-        
+
         # 设置窗口大小
         window_size = settings.BROWSER_OPTIONS[self.browser]["window_size"]
         self.driver.set_window_size(*window_size)
-        
+
         # 初始化等待对象
         self.wait = WebDriverWait(self.driver, settings.TIMEOUT)
-        
+
         return self.driver
     
     def quit(self):
@@ -158,39 +180,8 @@ class SeleniumHelper:
         """获取当前 URL"""
         return self.driver.current_url
     
-    def take_screenshot(self, filename=None):
-        """
-        截图，保存到报告目录
-        
-        Args:
-            filename: 文件名（如果为空，使用时间戳）
-        
-        Returns:
-            截图文件路径
-        """
-        if not filename:
-            from datetime import datetime
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]
-            filename = f"screenshot_{timestamp}.png"
-        
-        screenshot_dir = Path(settings.REPORTS_DIR) / "selenium_screenshots"
-        screenshot_dir.mkdir(parents=True, exist_ok=True)
-        screenshot_path = screenshot_dir / filename
-        
-        self.driver.save_screenshot(str(screenshot_path))
-        logger.info(f"截图已保存: {screenshot_path}")
-        return str(screenshot_path)
-    
-    def take_failure_screenshot(self, test_name):
-        """
-        在测试失败时截图
-        
-        Args:
-            test_name: 测试名称
-        
-        Returns:
-            截图文件路径
-        """
-        filename = f"failure_{test_name}.png"
-        return self.take_screenshot(filename)
-
+    def take_screenshot(self, filename):
+        """截图"""
+        filepath = settings.REPORTS_DIR / filename
+        self.driver.save_screenshot(str(filepath))
+        return filepath

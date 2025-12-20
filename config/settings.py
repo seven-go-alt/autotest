@@ -12,10 +12,18 @@ load_dotenv()
 BASE_DIR = Path(__file__).parent.parent
 
 # 测试配置
-BASE_URL = os.getenv("BASE_URL", "https://www.python.org")
+# UI 目标站点：使用公开的演示站点 SauceDemo
+BASE_URL = os.getenv("BASE_URL", "https://www.saucedemo.com/")
 BROWSER = os.getenv("BROWSER", "chrome").lower()
-HEADLESS = os.getenv("HEADLESS", "false").lower() == "true"
+HEADLESS = os.getenv("HEADLESS", "true").lower() == "true"
 TIMEOUT = int(os.getenv("TIMEOUT", "30"))
+
+# Playwright 配置
+PLAYWRIGHT_BROWSER = os.getenv("PLAYWRIGHT_BROWSER", "chromium").lower()
+PLAYWRIGHT_HEADLESS = os.getenv("PLAYWRIGHT_HEADLESS", str(HEADLESS)).lower() == "true"
+
+# Selenium 远程配置（用于 Docker + Selenium Grid/Standalone）
+SELENIUM_REMOTE_URL = os.getenv("SELENIUM_REMOTE_URL")
 
 # 浏览器选项
 BROWSER_OPTIONS = {
@@ -47,4 +55,7 @@ REPORTS_DIR.mkdir(exist_ok=True)
 # 日志目录
 LOGS_DIR = BASE_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
+
+# API 基础地址（示例：reqres.in 提供公开接口）
+API_BASE_URL = os.getenv("API_BASE_URL", "https://reqres.in/api")
 

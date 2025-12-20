@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  selenium:
+    image: selenium/standalone-chrome:4.14.1-20231208
+    shm_size: 2gb
+    environment:
+      - SE_NODE_SESSION_TIMEOUT=300
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/ui"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tests:
+    build: .
+    depends_on:
+      selenium:
+        condition: service_healthy
+    environment:
+      - BASE_URL=https://www.saucedemo.com/
+      - API_BASE_URL=https://reqres.in/api
+      - HEADLESS=true
+      - PLAYWRIGHT_HEADLESS=true
+      - BROWSER=chrome
+      - SELENIUM_REMOTE_URL=http://selenium:4444/wd/hub
+    command: >
+      bash -lc "
+        pytest tests/test_API -m api -v &&
+        pytest tests/test_UI -m selenium -v &&
+        pytest tests/test_UI -m playwright -v
+      "
+

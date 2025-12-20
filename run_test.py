@@ -23,14 +23,14 @@ def create_reports_dir():
 def run_pytest_selenium():
     """运行 pytest Selenium 测试"""
     print("\n运行 pytest Selenium 测试...")
-    cmd = [sys.executable, "-m", "pytest", "tests/test_selenium_example.py", "-m", "selenium", "-v"]
+    cmd = [sys.executable, "-m", "pytest", "tests/test_UI", "-m", "selenium", "-v"]
     return subprocess.run(cmd)
 
 
 def run_pytest_playwright():
     """运行 pytest Playwright 测试"""
     print("\n运行 pytest Playwright 测试...")
-    cmd = [sys.executable, "-m", "pytest", "tests/test_playwright_example.py", "-m", "playwright", "-v"]
+    cmd = [sys.executable, "-m", "pytest", "tests/test_UI", "-m", "playwright", "-v"]
     return subprocess.run(cmd)
 
 
@@ -45,6 +45,13 @@ def run_robot_framework():
     """运行 Robot Framework 测试"""
     print("\n运行 Robot Framework 测试...")
     cmd = [sys.executable, "-m", "robot", "--outputdir", "reports/robotframework", "tests/robotframework/"]
+    return subprocess.run(cmd)
+
+
+def run_pytest_api():
+    """运行 API 测试"""
+    print("\n运行 API 测试...")
+    cmd = [sys.executable, "-m", "pytest", "tests/test_API", "-m", "api", "-v"]
     return subprocess.run(cmd)
 
 
@@ -63,6 +70,10 @@ def run_all_tests():
     print("\n--- pytest Playwright ---")
     result2 = run_pytest_playwright()
     results.append(("pytest Playwright", result2.returncode))
+
+    print("\n--- pytest API ---")
+    result_api = run_pytest_api()
+    results.append(("pytest API", result_api.returncode))
     
     print("\n--- Robot Framework ---")
     result3 = run_robot_framework()
@@ -86,9 +97,10 @@ def display_menu():
     print("请选择测试框架:")
     print("1) pytest (Selenium)")
     print("2) pytest (Playwright)")
-    print("3) pytest (全部)")
-    print("4) Robot Framework (推荐用于功能型/关键字封装测试)")
-    print("5) 全部运行")
+    print("3) pytest (API)")
+    print("4) pytest (全部)")
+    print("5) Robot Framework (推荐用于功能型/关键字封装测试)")
+    print("6) 全部运行")
     print("0) 退出")
     print("==========================================\n")
 
@@ -114,23 +126,28 @@ def main():
                     print("\n✗ pytest Playwright 测试失败")
                     sys.exit(result.returncode)
             elif choice == "3":
+                result = run_pytest_api()
+                if result.returncode != 0:
+                    print("\n✗ pytest API 测试失败")
+                    sys.exit(result.returncode)
+            elif choice == "4":
                 result = run_pytest_all()
                 if result.returncode != 0:
                     print("\n✗ pytest 测试失败")
                     sys.exit(result.returncode)
-            elif choice == "4":
+            elif choice == "5":
                 result = run_robot_framework()
                 if result.returncode != 0:
                     print("\n✗ Robot Framework 测试失败")
                     sys.exit(result.returncode)
-            elif choice == "5":
+            elif choice == "6":
                 if not run_all_tests():
                     sys.exit(1)
             elif choice == "0":
                 print("退出程序")
                 sys.exit(0)
             else:
-                print("✗ 无效选项，请重新输入 (0-5)")
+                print("✗ 无效选项，请重新输入 (0-6)")
                 continue
             
             # 单个测试成功后询问是否继续

@@ -5,27 +5,14 @@ Library           Browser
 Library           ../../utils/robot_custom_library.py    WITH NAME    PlayLib
 
 *** Keywords ***
-打开浏览器
-    [Arguments]    ${url}    ${browser}=chrome
-    Open Browser    ${url}    ${browser}
+使用 Selenium 登录
+    [Arguments]    ${base_url}    ${username}    ${password}
+    Open Browser    ${base_url}    chrome
     Maximize Browser Window
-
-关闭浏览器
-    Close Browser
-
-输入搜索关键词
-    [Arguments]    ${keyword}
-    # 默认使用 SeleniumLibrary 的关键字
-    Input Text    id=kw    ${keyword}
-    Click Button    id=su
-
-等待搜索结果加载
-    Wait Until Element Is Visible    id=content_left    timeout=10s
-
-验证搜索结果
-    [Arguments]    ${expected_text}
-    ${title}=    Get Title
-    Should Contain    ${title}    ${expected_text}
+    Wait Until Element Is Visible    id=user-name    timeout=10s
+    Input Text    id=user-name    ${username}
+    Input Text    id=password     ${password}
+    Click Button    id=login-button
 
 *** Keywords ***
 打开 Playwright 浏览器
@@ -36,9 +23,12 @@ Library           ../../utils/robot_custom_library.py    WITH NAME    PlayLib
 关闭 Playwright 浏览器
     Close Playwright Browser
 
-Playwright 输入并搜索
-    [Arguments]    ${selector}    ${text}
-    Wait For Selector    ${selector}    timeout=15
-    Input Text    ${selector}    ${text}
-    Click    css=button#su
+Playwright 登录
+    [Arguments]    ${base_url}    ${username}    ${password}
+    Open Playwright Browser    headless=True
+    Go To    ${base_url}
+    Wait For Selector    css=input#user-name    timeout=15
+    Input Text    css=input#user-name    ${username}
+    Input Text    css=input#password    ${password}
+    Click    css=button#login-button
 

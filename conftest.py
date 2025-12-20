@@ -50,40 +50,9 @@ def base_url():
     return settings.BASE_URL
 
 
-# pytest 钩子：在测试失败时自动生成报告和截图
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    """
-    在测试失败时生成报告
-    """
-    outcome = yield
-    rep = outcome.get_result()
-    
-    # 记录失败信息
-    if rep.failed:
-        logger.error(f"测试失败: {item.name}")
-        if call.excinfo:
-            logger.error(f"异常信息: {call.excinfo.value}")
+@pytest.fixture(scope="session")
+def api_base_url():
+    """API 基础 URL fixture"""
+    import config.settings as settings
+    return settings.API_BASE_URL
 
-
-@pytest.fixture(scope="function", autouse=True)
-def selenium_failure_screenshot(request, selenium_driver):
-    """
-    自动为 Selenium 测试失败的情况生成截图
-    """
-    yield
-    
-    # 检查测试是否失败
-    if request.node.rep_call.failed if hasattr(request.node, 'rep_call') else False:
-        try:
-            if selenium_driver and selenium_driver.driver:
-                screenshot_dir = Path(settings.REPORTS_DIR) / "selenium_screenshots"
-                screenshot_dir.mkdir(parents=True, exist_ok=True)
-                
-                screenshot_name = f"failure_{request.node.name}.png"
-                screenshot_path = screenshot_dir / screenshot_name
-                
-                selenium_driver.driver.save_screenshot(str(screenshot_path))
-                logger.info(f"失败截图已保存: {screenshot_path}")
-        except Exception as e:
-            logger.warning(f"保存失败截图时出错: {str(e)}")

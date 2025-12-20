@@ -17,8 +17,8 @@ class PlaywrightHelper:
             browser: 浏览器类型 (chromium/firefox/webkit)
             headless: 是否无头模式
         """
-        self.browser_type = browser or "chromium"
-        self.headless = headless if headless is not None else settings.HEADLESS
+        self.browser_type = browser or settings.PLAYWRIGHT_BROWSER or "chromium"
+        self.headless = headless if headless is not None else settings.PLAYWRIGHT_HEADLESS
         self.playwright = None
         self.browser = None
         self.context = None
@@ -42,7 +42,11 @@ class PlaywrightHelper:
         
         # 创建上下文
         viewport = settings.BROWSER_OPTIONS.get("chrome", {}).get("window_size", (1920, 1080))
-        self.context = self.browser.new_context(viewport={"width": viewport[0], "height": viewport[1]})
+        self.context = self.browser.new_context(
+            viewport={"width": viewport[0], "height": viewport[1]},
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        )
         
         # 创建页面
         self.page = self.context.new_page()

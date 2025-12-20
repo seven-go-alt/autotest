@@ -1,7 +1,6 @@
 *** Settings ***
 Documentation    通用资源文件
 Library           SeleniumLibrary
-Library           Browser
 Library           ../../utils/robot_custom_library.py    WITH NAME    PlayLib
 
 *** Keywords ***
@@ -17,18 +16,18 @@ Library           ../../utils/robot_custom_library.py    WITH NAME    PlayLib
 *** Keywords ***
 打开 Playwright 浏览器
     [Arguments]    ${url}    ${headless}=True
-    Open Playwright Browser    headless=${headless}
-    Go To    ${url}
+    PlayLib.Open Playwright Browser    headless=${headless}
+    PlayLib.Go To    ${url}
 
 关闭 Playwright 浏览器
-    Close Playwright Browser
+    PlayLib.Close Playwright Browser
 
 Playwright 登录
     [Arguments]    ${base_url}    ${username}    ${password}
-    Open Playwright Browser    headless=True
-    Go To    ${base_url}
-    Wait For Selector    css=input#user-name    timeout=15
-    Input Text    css=input#user-name    ${username}
-    Input Text    css=input#password    ${password}
-    Click    css=button#login-button
+    PlayLib.Open Playwright Browser    headless=True
+    PlayLib.Go To    ${base_url}
+    PlayLib.Wait For Selector    css=input#user-name    timeout=15
+    PlayLib.Input Text    css=input#user-name    ${username}
+    PlayLib.Input Text    css=input#password    ${password}
+    PlayLib.Click    css=button#login-button
 

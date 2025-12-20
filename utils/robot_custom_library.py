@@ -111,3 +111,42 @@ class RobotCustomLibrary:
             self._play = None
             self._browser = None
             self._page = None
+
+
+# 为兼容性提供模块级包装函数，确保 Robot Framework 在通过模块导入时能发现关键字
+_lib = RobotCustomLibrary()
+
+
+@keyword("Open Playwright Browser")
+def Open_Playwright_Browser(headless=True, browser_name='chromium'):
+    return _lib.open_playwright_browser(headless=headless, browser_name=browser_name)
+
+
+@keyword("Go To")
+def Go_To(url):
+    return _lib.go_to(url)
+
+
+@keyword("Wait For Selector")
+def Wait_For_Selector(selector, timeout=30):
+    return _lib.wait_for_selector(selector, timeout=timeout)
+
+
+@keyword("Input Text")
+def Input_Text_Playwright(selector, text):
+    return _lib.input_text(selector, text)
+
+
+@keyword("Click")
+def Click_Element(selector):
+    return _lib.click(selector)
+
+
+@keyword("Get Title")
+def Get_Title():
+    return _lib.get_title()
+
+
+@keyword("Close Playwright Browser")
+def Close_Playwright_Browser():
+    return _lib.close_playwright_browser()

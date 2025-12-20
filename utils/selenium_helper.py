@@ -14,22 +14,28 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
+from pathlib import Path
 import config.settings as settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SeleniumHelper:
     """Selenium 辅助类"""
     
-    def __init__(self, browser=None, headless=None):
+    def __init__(self, browser=None, headless=None, screenshot_on_failure=True):
         """
         初始化浏览器驱动
         
         Args:
             browser: 浏览器类型 (chrome/firefox/edge)
             headless: 是否无头模式
+            screenshot_on_failure: 失败时是否自动截图
         """
         self.browser = browser or settings.BROWSER
         self.headless = headless if headless is not None else settings.HEADLESS
+        self.screenshot_on_failure = screenshot_on_failure
         self.driver = None
         self.wait = None
         
@@ -152,9 +158,39 @@ class SeleniumHelper:
         """获取当前 URL"""
         return self.driver.current_url
     
-    def take_screenshot(self, filename):
-        """截图"""
-        filepath = settings.REPORTS_DIR / filename
-        self.driver.save_screenshot(str(filepath))
-        return filepath
+    def take_screenshot(self, filename=None):
+        """
+        截图，保存到报告目录
+        
+        Args:
+            filename: 文件名（如果为空，使用时间戳）
+        
+        Returns:
+            截图文件路径
+        """
+        if not filename:
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]
+            filename = f"screenshot_{timestamp}.png"
+        
+        screenshot_dir = Path(settings.REPORTS_DIR) / "selenium_screenshots"
+        screenshot_dir.mkdir(parents=True, exist_ok=True)
+        screenshot_path = screenshot_dir / filename
+        
+        self.driver.save_screenshot(str(screenshot_path))
+        logger.info(f"截图已保存: {screenshot_path}")
+        return str(screenshot_path)
+    
+    def take_failure_screenshot(self, test_name):
+        """
+        在测试失败时截图
+        
+        Args:
+            test_name: 测试名称
+        
+        Returns:
+            截图文件路径
+        """
+        filename = f"failure_{test_name}.png"
+        return self.take_screenshot(filename)
 

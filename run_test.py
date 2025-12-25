@@ -13,45 +13,94 @@ from pathlib import Path
 
 def create_reports_dir():
     """创建报告目录"""
+    # 保留旧的 reports 目录，同时确保新的 tmp 目录存在，未来报告默认写入 tmp
     reports_dir = Path("reports")
     reports_dir.mkdir(exist_ok=True)
     robotframework_dir = reports_dir / "robotframework"
     robotframework_dir.mkdir(exist_ok=True)
-    print(f"✓ 报告目录已准备: {reports_dir}/")
+
+    tmp_dir = Path("tmp")
+    tmp_dir.mkdir(exist_ok=True)
+    print(f"✓ 报告目录已准备: {reports_dir}/ 和 {tmp_dir}/")
 
 
 def run_pytest_selenium():
     """运行 pytest Selenium 测试"""
     print("\n运行 pytest Selenium 测试...")
-    cmd = [sys.executable, "-m", "pytest", "tests/test_UI", "-m", "selenium", "-v"]
+    cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "tests/test_UI",
+        "-m",
+        "selenium",
+        "-v",
+        "--html=tmp/pytest_selenium.html",
+        "--self-contained-html",
+    ]
     return subprocess.run(cmd)
 
 
 def run_pytest_playwright():
     """运行 pytest Playwright 测试"""
     print("\n运行 pytest Playwright 测试...")
-    cmd = [sys.executable, "-m", "pytest", "tests/test_UI", "-m", "playwright", "-v"]
+    cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "tests/test_UI",
+        "-m",
+        "playwright",
+        "-v",
+        "--html=tmp/pytest_playwright.html",
+        "--self-contained-html",
+    ]
     return subprocess.run(cmd)
 
 
 def run_pytest_all():
     """运行所有 pytest 测试"""
     print("\n运行所有 pytest 测试...")
-    cmd = [sys.executable, "-m", "pytest", "tests/", "-v"]
+    cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "tests/",
+        "-v",
+        "--html=tmp/pytest_all.html",
+        "--self-contained-html",
+    ]
     return subprocess.run(cmd)
 
 
 def run_robot_framework():
     """运行 Robot Framework 测试"""
     print("\n运行 Robot Framework 测试...")
-    cmd = [sys.executable, "-m", "robot", "--outputdir", "reports/robotframework", "tests/robotframework/"]
+    cmd = [
+        sys.executable,
+        "-m",
+        "robot",
+        "--outputdir",
+        "tmp",
+        "tests/robotframework/",
+    ]
     return subprocess.run(cmd)
 
 
 def run_pytest_api():
     """运行 API 测试"""
     print("\n运行 API 测试...")
-    cmd = [sys.executable, "-m", "pytest", "tests/test_API", "-m", "api", "-v"]
+    cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "tests/test_API",
+        "-m",
+        "api",
+        "-v",
+        "--html=tmp/pytest_api.html",
+        "--self-contained-html",
+    ]
     return subprocess.run(cmd)
 
 
@@ -163,7 +212,7 @@ def main():
             sys.exit(1)
     
     print("\n==========================================")
-    print("测试完成！报告位置: reports/")
+    print("测试完成！报告位置: tmp/ （Robot 与 pytest 报告将生成到 tmp/ 下）")
     print("==========================================")
 
 

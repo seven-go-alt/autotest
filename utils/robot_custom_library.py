@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 from robot.api import logger
 import config.settings as settings
+import os
 
 class RobotCustomLibrary:
     """简单的 Robot 自定义库，使用 Playwright 同步 API 实现常用关键字。"""
@@ -111,6 +112,27 @@ class RobotCustomLibrary:
             self._play = None
             self._browser = None
             self._page = None
+
+    @keyword("Get API Token From Env")
+    def get_api_token(self, var_name='API_TOKEN'):
+        """从环境变量读取 API token，默认使用 `API_TOKEN` 变量名。"""
+        return os.getenv(var_name)
+
+    @keyword("Build Headers")
+    def build_headers(self, base_headers=None, extra_headers=None, auth_token=None):
+        """合并 headers 字典并可选添加 Authorization：
+        - `base_headers` 和 `extra_headers` 可为字典或空
+        - `auth_token` 会作为 `Bearer <token>` 添加到 Authorization
+        返回合并后的字典（始终为 dict）。
+        """
+        headers = {}
+        if base_headers and isinstance(base_headers, dict):
+            headers.update(base_headers)
+        if extra_headers and isinstance(extra_headers, dict):
+            headers.update(extra_headers)
+        if auth_token:
+            headers.setdefault('Authorization', f'Bearer {auth_token}')
+        return headers
 
 
 # 为兼容性提供模块级包装函数，确保 Robot Framework 在通过模块导入时能发现关键字

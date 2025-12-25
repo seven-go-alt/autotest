@@ -27,6 +27,7 @@ wheels/
 reports/
 *.html
 *.xml
+tmp/
 *.json
 allure-results/
 allure-report/

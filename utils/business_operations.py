@@ -4,10 +4,13 @@
 使用底层操作组合成完整的业务功能
 """
 
+import logging
 from typing import Optional, List, Dict
 from utils.ui_operations import UIOperations
 from tests.ui_layer.locators.saucedemo_locators import SauceDemoLocators
 from tests.ui_layer.locators.baidu_locators import BaiduLocators
+
+logger = logging.getLogger(__name__)
 
 
 class SauceDemoOperations:
@@ -25,32 +28,48 @@ class SauceDemoOperations:
     
     def login(self, username: str, password: str):
         """登录操作"""
-        self.ui.fill(self.locators.LOGIN_USERNAME_INPUT, username)
-        self.ui.fill(self.locators.LOGIN_PASSWORD_INPUT, password)
-        self.ui.click(self.locators.LOGIN_BUTTON)
-        # 等待登录完成
-        self.ui.wait_for_element(self.locators.PRODUCTS_CONTAINER, timeout=10000)
+        logger.info(f"执行登录操作: 用户名={username}")
+        try:
+            self.ui.fill(self.locators.LOGIN_USERNAME_INPUT, username)
+            self.ui.fill(self.locators.LOGIN_PASSWORD_INPUT, password)
+            self.ui.click(self.locators.LOGIN_BUTTON)
+            # 等待登录完成
+            self.ui.wait_for_element(self.locators.PRODUCTS_CONTAINER, timeout=10000)
+            logger.info("登录操作完成")
+        except Exception as e:
+            logger.error(f"登录失败: {e}")
+            raise
     
     def verify_login_success(self):
         """验证登录成功"""
+        logger.info("验证登录成功")
         self.ui.assert_element_exists(self.locators.PRODUCTS_CONTAINER)
+        logger.info("登录成功验证通过")
     
     def verify_login_failed(self, expected_error: Optional[str] = None):
         """验证登录失败"""
+        logger.info("验证登录失败")
         self.ui.assert_element_exists(self.locators.LOGIN_ERROR_CONTAINER)
         if expected_error:
             self.ui.assert_text_contains(self.locators.LOGIN_ERROR_CONTAINER, expected_error)
+        logger.info("登录失败验证通过")
     
     def add_product_to_cart(self, product_index: int = 0):
         """添加产品到购物车"""
+        logger.info(f"添加产品到购物车: 索引={product_index}")
         products = self.ui.page.query_selector_all(self.locators.PRODUCT_ITEM)
         if product_index >= len(products):
-            raise IndexError(f"产品索引超出范围: {product_index}")
+            error_msg = f"产品索引超出范围: {product_index}，总数: {len(products)}"
+            logger.error(error_msg)
+            raise IndexError(error_msg)
         
         product = products[product_index]
         add_btn = product.query_selector(self.locators.PRODUCT_ADD_BTN)
         if add_btn:
             add_btn.click()
+            logger.info(f"产品已添加到购物车: 索引={product_index}")
+        else:
+            logger.warning(f"未找到添加按钮: 索引={product_index}")
     
     def add_multiple_products_to_cart(self, indices: List[int]):
         """添加多个产品到购物车"""

@@ -19,11 +19,10 @@ playwright==1.40.0
 robotframework-browser==18.0.0
 
 # API 测试
-requests==2.31.0
+requests==2.32.3
 
 # 其他工具
 python-dotenv==1.0.0
-requests==2.32.3
 # allure-pytest 已移除（与 Python 3.11 兼容性问题），使用 pytest-html 代替
 
 
